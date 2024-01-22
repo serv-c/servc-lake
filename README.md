@@ -6,7 +6,7 @@
 As per usual, this package does not come bundled with any libraries to ensure full flexibility on dependencies and security vulnerabilities.
 
 ```
-$ pip install servc [...lake libraries]
+$ pip install servc servc-lake [...pandas, pyarrow, etc.]
 ```
 
 ## Documentation
@@ -23,19 +23,35 @@ Servc's documentation can be found https://docs.servc.ca
 
 ### Example
 
-Here is the most simple example of use, 
-
 ```python
-from servc.com.server.server import start_server
+import pyarrow as pa
+from servclake.delta import Delta
 
-def inputProcessor(messageId, bus, cache, components, message, emit):
-  pass
-
-# the method 'methodA' will be resolved by inputProcessor
-start_server(
-  "my-route",
-  {
-    "methodA": inputProcessor
-  }
+# create a deltalake instance
+deltalake = Delta(
+  "/datalake",
+  [
+    {
+      "name": "mytesttable",
+      "schema": pa.schema([pa.field("col", pa.string()), pa.field("value", pa.int32())]),
+      "partition": "col",
+    }
+  ]
 )
+
+# delcare our dataframe
+df = pa.Table.from_pylist(
+    [
+        {"col": "df1", "value": 1},
+        {"col": "asd2", "value": 2},
+        {"col": "asd3", "value": 3},
+        {"col": "asd4", "value": 4},
+        {"col": "asd5", "value": 5},
+    ],
+    schema=pa.schema([pa.field("col", pa.string()), pa.field("value", pa.int32())]),
+)
+
+# write dataframe to lake
+table = self.lake.write("mytesttable", df, mode="append")
+print(table.to_pandas())
 ```

@@ -3,7 +3,6 @@ import shutil
 import unittest
 
 import pyarrow as pa
-from deltalake import write_deltalake
 
 from servclake.delta import Delta
 
@@ -24,10 +23,10 @@ table = {
     "partition": "col",
 }
 
-path = "/tmp/iceberg"
+path = "/tmp/delta"
 
 
-class TestServer(unittest.TestCase):
+class TestDelta(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.lake = Delta(path)
