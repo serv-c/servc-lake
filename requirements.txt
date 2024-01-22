@@ -1,0 +1,5 @@
+-i https://pypi.org/simple
+servc==0.4.4
+deltalake==0.15.1
+
+pandas
