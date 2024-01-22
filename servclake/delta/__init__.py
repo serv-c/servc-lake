@@ -13,6 +13,7 @@ class Table(TypedDict):
     mode: NotRequired[str]
     description: NotRequired[str]
     custom_metadata: NotRequired[dict]
+    otherOptions: NotRequired[Any]
 
 
 class Delta(ServiceComponent):
@@ -35,7 +36,7 @@ class Delta(ServiceComponent):
                 continue
 
             table_uri = os.path.join(self._dataPath, table["name"])
-            if not os.path.exists(table_uri):
+            if not os.path.exists(table_uri) and table.get("location", "fs") == "fs":
                 os.makedirs(table_uri, exist_ok=True)
 
             delta_table = DeltaTable.create(
@@ -46,6 +47,7 @@ class Delta(ServiceComponent):
                 mode=table.get("mode", "ignore"),
                 description=table.get("description", None),
                 custom_metadata=table.get("custom_metadata", None),
+                **table.get("otherOptions", {}),
             )
             self._deltaTables.append(delta_table)
 
