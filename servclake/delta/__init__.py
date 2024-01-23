@@ -30,6 +30,18 @@ class Delta(ServiceComponent):
         self._dataPath = datapath
         self._tables = tables
 
+    def _connect(self):
+        self.load_tables()
+        self.isReady = True
+        self.isOpen = True
+
+    def _close(self):
+        if self._isOpen:
+            self.isReady = False
+            self.isOpen = False
+            return True
+        return False
+
     def load_tables(self):
         for index, table in enumerate(self._tables):
             if len(self._deltaTables) > index:
