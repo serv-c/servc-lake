@@ -6,22 +6,41 @@
 As per usual, this package does not come bundled with any libraries to ensure full flexibility on dependencies and security vulnerabilities.
 
 ```
-$ pip install servc servc-lake [...pandas, pyarrow, etc.]
+$ pip install servc servc-lake pyarrow [pandas]
 ```
 
-## Documentation
+## Environment Variables
 
-Servc's documentation can be found https://docs.servc.ca
+**DATA_PATH** - the location to start writing files. Default: /tmp/datalake
 
+## Parquet
+
+```python
+import pyarrow as pa
+from servclake.parquet import Parquet
+
+table = Parquet(
+  {
+    "name": "mytesttable",
+    "schema": pa.schema(
+        [
+            pa.field("col1", pa.string(), nullable=False),
+            pa.field("col2", pa.uint32(), nullable=False),
+            pa.field("j3", pa.uint32(), nullable=False),
+        ]
+    ),
+    "partition": ["col2", "col1"],
+  }
+)
+
+# write data to table
+table.write(pa.Table.from_pylist([{"col1": "a", "col2": 1, "j3": 1}]))
+
+# read partition. reads partiion 1 of col2.
+df = table.read([1])
+```
 
 ## Delta Lake
-
-### Environment Variables
-
-**DATA_PATH** - the location to start writing files. Default: /tmp/
-
-
-### Example
 
 ```python
 import pyarrow as pa
