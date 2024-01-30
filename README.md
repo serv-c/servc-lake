@@ -13,7 +13,7 @@ $ pip install servc servc-lake pyarrow [pandas]
 
 **DATA_PATH** - the location to start writing files. Default: /tmp/datalake
 
-## Parquet
+### Parquet
 
 ```python
 import pyarrow as pa
@@ -40,7 +40,7 @@ table.write(pa.Table.from_pylist([{"col1": "a", "col2": 1, "j3": 1}]))
 df = table.read([1])
 ```
 
-## Delta Lake
+### Delta Lake
 
 ```python
 import pyarrow as pa
