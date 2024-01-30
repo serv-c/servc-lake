@@ -34,3 +34,10 @@ class Parquet(TableFile):
 
         pq.write_table(df, path)
         return df
+
+    def append(self, df: pa.Table, partition: List[str] = []) -> pa.Table:
+        existing_df = self.read(partition)
+        new_df = pa.concat_tables([existing_df, df])
+        self.write(new_df, partition)
+
+        return new_df

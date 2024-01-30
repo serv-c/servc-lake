@@ -1,3 +1,4 @@
+import abc
 import hashlib
 import os
 from typing import List, TypedDict
@@ -47,7 +48,7 @@ class TableFile(ServiceComponent):
             return True
         return False
 
-    def get_path(self, partition: List[str]) -> str:
+    def get_path(self, partition: List[str] = []) -> str:
         path = self._dataPath
         for index, value in enumerate(partition):
             key = self._partition[index]
@@ -58,14 +59,8 @@ class TableFile(ServiceComponent):
 
         return path
 
-    def check_part(self, partition: List[str], raise_exception: bool = None) -> bool:
-        if raise_exception is None:
-            raise_exception = False
+    def check_part(self, partition: List[str] = []) -> bool:
         if len(partition) != len(self._partition):
-            if raise_exception:
-                raise ValueError(
-                    f"Partition length {len(partition)} does not match table partition length {len(self._partition)}"
-                )
             return False
         return True
 
@@ -90,15 +85,14 @@ class TableFile(ServiceComponent):
 
         return partitions
 
-    def read(self, partition: List[str] = [], columns: List[str] = None) -> pa.Table:
+    @abc.abstractmethod
+    def read(self) -> pa.Table:
         pass
 
-    def write(self, df: pa.Table, partition: List[str] = []) -> pa.Table:
+    @abc.abstractmethod
+    def write(self, df: pa.Table) -> pa.Table:
         pass
 
-    def append(self, df: pa.Table, partition: List[str] = []) -> pa.Table:
-        existing_df = self.read(partition)
-        new_df = pa.concat_tables([existing_df, df])
-        self.write(new_df, partition)
-
-        return new_df
+    @abc.abstractmethod
+    def append(self, df: pa.Table) -> pa.Table:
+        pass
