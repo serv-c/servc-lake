@@ -1,0 +1,86 @@
+name: 'Unit Tests'
+on:
+  - push
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.12', '3.11']
+
+    services:
+      rabbitmq:
+        image: rabbitmq:3
+        env:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+        ports:
+          - 5672:5672
+
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - if: gitea.workspace != ''
+        run: sleep 20s
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Lint
+        run: |
+          pip install isort black flake8 coverage
+          isort servclake
+          black servclake
+          flake8 --ignore=E501,W503 servclake
+          git status
+          git diff --exit-code servclake
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          if [ ! -f .coveragerc ]; then
+            echo "[run]" >> .coveragerc
+            echo "omit =" >> .coveragerc
+            echo "  tests/*" >> .coveragerc
+            echo "  worker.py" >> .coveragerc
+          fi
+
+      - name: Run tests
+        env:
+          COVERAGE: ${{ env.COVERAGE}}
+          DATABASE_URL: postgres://postgres:postgres@postgres/postgres
+          CACHE_URL: redis://redis
+          BUS_URL: amqp://guest:guest@rabbitmq
+        run: |
+          coverage run --concurrency=multiprocessing -m unittest tests/*.py
+          coverage combine
+          coverage report -m --fail-under=${COVERAGE:-80}

@@ -1,0 +1,11 @@
+name: 'Package Publish'
+on: 
+  - push
+
+jobs: 
+  packagepublish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: https://git.yusufali.ca/actions/pythonpip@main
+        with:
+          pypiptoken: ${{ secrets.PYPI_TOKEN }}
