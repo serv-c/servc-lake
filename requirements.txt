@@ -4,4 +4,4 @@ servc==0.4.4
 pandas
 
 pyarrow
-deltalake==0.15.1
+deltalake==0.17.1
